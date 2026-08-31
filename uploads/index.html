@@ -1,0 +1,389 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คลังคำสั่ง SQL — QGIS Virtual Layer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --paper:#E7EAE1; --sheet:#FCFCF9; --ink:#141C18; --soft:#5F6E65; --rule:#CBD2C4;
+  --signal:#2237C4; --signal-tint:#E6E8FA; --ochre:#9C6A0B; --green:#2C6B4F; --plum:#8A2E5D;
+  --display:'Bai Jamjuree','Trebuchet MS',system-ui,sans-serif;
+  --body:'IBM Plex Sans Thai','Bai Jamjuree',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg,rgba(20,28,24,.05) 0 1px,transparent 1px 34px),
+    repeating-linear-gradient(90deg,rgba(20,28,24,.05) 0 1px,transparent 1px 34px);
+  color:var(--ink);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1020px;margin:0 auto;padding:30px 20px 60px}
+
+.masthead{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;
+  padding-bottom:14px;margin-bottom:24px;border-bottom:2px solid var(--ink)}
+.masthead h1{font-family:var(--display);font-weight:700;font-size:clamp(23px,3.2vw,33px);
+  letter-spacing:-.02em;line-height:1.15;margin:0}
+.masthead p{margin:5px 0 0;color:var(--soft);font-size:14px;max-width:56ch}
+.stamp{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--soft);text-align:right;line-height:1.9;white-space:nowrap}
+.stamp b{display:block;color:var(--ink);font-weight:700;font-size:13px}
+
+.panel{background:var(--sheet);border:1px solid var(--rule);padding:18px 20px;margin-bottom:20px}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--soft);display:flex;align-items:center;gap:9px;margin:0 0 13px}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
+.eyebrow em{font-style:normal;color:var(--ink);font-weight:700}
+.eyebrow .tail{color:var(--soft);letter-spacing:.05em;flex:none}
+.eyebrow button{background:none;border:0;padding:0;cursor:pointer;font:inherit;color:var(--signal);
+  letter-spacing:.08em;flex:none}
+.eyebrow button:hover{text-decoration:underline}
+.eyebrow::after{order:5}
+.eyebrow .tail,.eyebrow button{order:6}
+
+.branch{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:10px}
+.branch>div{flex:1;min-width:240px}
+.preview{margin:0 0 15px;font-family:var(--mono);font-size:11.5px;color:var(--soft);
+  line-height:1.9;word-break:break-all}
+.preview b{color:var(--ink);font-weight:500;background:var(--signal-tint);padding:1px 5px;margin-right:5px;
+  display:inline-block}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+@media(max-width:700px){.chips{grid-template-columns:repeat(2,1fr)}}
+.chip{display:block;text-align:left;padding:9px 11px;cursor:pointer;background:#fff;
+  border:1px solid var(--rule);color:var(--ink);font-family:var(--body);position:relative;
+  transition:background .12s ease,border-color .12s ease,transform .12s ease}
+.chip b{display:block;font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.04em}
+.chip span{display:block;font-size:11.5px;color:var(--soft);margin-top:1px}
+.chip:hover{border-color:var(--ink);transform:translateY(-1px)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
+.chip[aria-pressed="true"] b{color:var(--sheet)}
+.chip[aria-pressed="true"] span{color:#A9B5AA}
+.chip[aria-pressed="true"]::after{content:"";position:absolute;top:8px;right:9px;width:6px;height:6px;
+  background:#7FE3B0;border-radius:50%}
+
+label{display:block;font-size:12.5px;font-weight:500;margin:0 0 6px}
+select{width:100%;font-family:var(--body);font-size:14px;color:var(--ink);background:#fff;
+  border:1px solid var(--rule);border-radius:0;padding:11px 10px}
+select:disabled{color:var(--soft);background:#F2F3EE}
+select:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.go{margin-top:14px;padding:12px 22px;border:0;cursor:pointer;background:var(--signal);color:#fff;
+  font-family:var(--mono);font-weight:700;font-size:13.5px;letter-spacing:.09em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:10px;
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
+.go:hover:not(:disabled){background:#1a2ca6;transform:translateY(-1px);box-shadow:0 6px 0 -2px rgba(34,55,196,.35)}
+.go:active{transform:translateY(0);box-shadow:none}
+.go:disabled{background:#A8B0AC;cursor:not-allowed}
+.go span{font-size:10px;opacity:.7;letter-spacing:.04em}
+.about{margin:11px 0 0;font-size:12.5px;color:var(--soft);line-height:1.55}
+.uses{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink);
+  border:1px solid var(--rule);padding:1px 6px;margin-right:7px;white-space:nowrap}
+
+.plate{position:relative;background:var(--sheet);border:1px solid var(--rule)}
+.mark{position:absolute;width:12px;height:12px;pointer-events:none}
+.mark.tl{top:-5px;left:-5px;border-top:1px solid var(--ink);border-left:1px solid var(--ink)}
+.mark.tr{top:-5px;right:-5px;border-top:1px solid var(--ink);border-right:1px solid var(--ink)}
+.mark.bl{bottom:-5px;left:-5px;border-bottom:1px solid var(--ink);border-left:1px solid var(--ink)}
+.mark.br{bottom:-5px;right:-5px;border-bottom:1px solid var(--ink);border-right:1px solid var(--ink)}
+.plate-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid var(--rule)}
+.trace{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--soft);display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-width:0}
+.trace b{color:var(--ink);font-weight:700}
+.trace i{font-style:normal;color:var(--rule)}
+.trace em{font-style:normal;font-weight:700;color:var(--ink)}
+.tools{display:flex;gap:8px}
+.tool{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--rule);color:var(--ink);padding:6px 11px;cursor:pointer;
+  transition:background .12s ease,border-color .12s ease}
+.tool:hover:not(:disabled){background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.tool:disabled{opacity:.4;cursor:not-allowed}
+.tool.done{background:var(--green);border-color:var(--green);color:#fff}
+.code-area{display:flex;overflow-x:auto}
+.gutter{flex:none;padding:16px 10px 16px 14px;text-align:right;font-family:var(--mono);
+  font-size:12.5px;line-height:1.72;color:#AAB4A9;border-right:1px dashed var(--rule);user-select:none}
+.code{flex:1;margin:0;padding:16px 18px;font-family:var(--mono);font-size:12.5px;
+  line-height:1.72;white-space:pre;tab-size:4}
+.code .line{display:block;min-height:1.72em}
+.reveal .line{animation:draw .22s ease-out both}
+@keyframes draw{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.reveal .line{animation:none}.go:hover{transform:none}}
+.k{color:var(--signal);font-weight:700}
+.f{color:var(--green);font-weight:500}
+.s{color:var(--ochre)}
+.n{color:var(--plum)}
+.empty{padding:46px 20px;text-align:center;color:var(--soft)}
+.empty .box{border:1px dashed var(--rule);padding:24px 16px;font-family:var(--mono);
+  font-size:12px;letter-spacing:.05em;line-height:2}
+.note{border-top:1px solid var(--rule);padding:11px 14px;font-size:12.5px;color:var(--soft);
+  display:flex;gap:9px;align-items:flex-start}
+.note::before{content:"NB";font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;
+  color:var(--ink);border:1px solid var(--ink);padding:1px 4px;flex:none;margin-top:2px}
+
+details{margin-top:22px;background:var(--sheet);border:1px solid var(--rule);padding:14px 18px}
+summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+details ul{margin:12px 0 2px;padding-left:18px;font-size:13px;color:var(--soft);line-height:1.75}
+details code{font-family:var(--mono);font-size:12px;background:var(--signal-tint);padding:1px 4px;color:var(--ink)}
+footer{margin-top:26px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--soft)}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <h1>คลังคำสั่ง SQL — ระบบประปา</h1>
+      <p>เลือกสาขาและชั้นข้อมูลที่มีในโปรเจกต์ เลือกสิ่งที่ต้องการสืบค้น แล้วคัดลอกคำสั่งไปวางใน Virtual Layer ของ QGIS</p>
+    </div>
+    <div class="stamp"><b id="total">— คำสั่ง</b>QGIS Virtual Layer · SpatiaLite</div>
+  </header>
+
+  <section class="panel">
+    <p class="eyebrow"><em>01</em> เลือกสาขาและชั้นข้อมูล<span class="tail">เลือกชั้นข้อมูลได้หลายชั้น</span><button type="button" id="all">เลือกทั้งหมด</button></p>
+    <div class="branch">
+      <div>
+        <label for="branch">สาขา</label>
+        <select id="branch"></select>
+      </div>
+    </div>
+    <p class="preview" id="preview"></p>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="panel">
+    <p class="eyebrow"><em>02</em> เลือกสิ่งที่ต้องการสืบค้น<span class="tail" id="qcount"></span></p>
+    <label for="q">คำถามที่ต้องการคำตอบ</label>
+    <select id="q"></select>
+    <p class="about" id="about"></p>
+    <button class="go" id="go">Create SQL <span>Ctrl + Enter</span></button>
+  </section>
+
+  <section class="plate">
+    <i class="mark tl"></i><i class="mark tr"></i><i class="mark bl"></i><i class="mark br"></i>
+    <div class="plate-head">
+      <div class="trace" id="trace"><em>03</em> SQL Statement</div>
+      <div class="tools">
+        <button class="tool" id="copy" disabled>คัดลอก</button>
+        <button class="tool" id="dl" disabled>.sql</button>
+      </div>
+    </div>
+    <div id="out"></div>
+    <div class="note" id="note" hidden></div>
+  </section>
+
+  <details>
+    <summary>ข้อควรรู้ก่อนใช้ใน QGIS</summary>
+    <ul>
+      <li>ชื่อตารางประกอบขึ้นจาก B + รหัสสาขา + _ + ชื่อชั้นข้อมูล เช่น <code>B5541018_PIPE</code> โดย 55410 เป็นรหัสตายตัว และสองหลักท้ายคือรหัสสาขา</li>
+      <li>เปิดที่ <code>Layer › Add Layer › Add/Edit Virtual Layer</code> วางคำสั่งในช่อง Query — ชั้นข้อมูลที่อ้างถึงต้องเปิดอยู่ในโปรเจกต์และชื่อเลเยอร์ต้องตรงกับที่ใช้ในคำสั่ง</li>
+      <li>คอลัมน์เรขาคณิตใน Virtual Layer ชื่อ <code>geometry</code> เสมอ ไม่ว่าต้นทางจะเป็นรูปแบบใด</li>
+      <li>ระยะทางและพื้นที่คิดตามหน่วยของระบบพิกัด ค่าที่ระบุเป็นเมตรจะถูกต้องเมื่อข้อมูลอยู่ในระบบพิกัดแบบเมตร เช่น EPSG:32647 หรือ 32648</li>
+      <li>คำสั่งที่มีคอลัมน์ <code>geometry</code> ในผลลัพธ์จะแสดงบนแผนที่ได้ แต่ต้องกำหนด Unique identifier ในหน้าต่าง Virtual Layer ก่อน</li>
+      <li>ไม่ต้องใส่ <code>;</code> ปิดท้าย และรันได้ครั้งละหนึ่งคำสั่ง</li>
+      <li><code>yearInstall</code> ในตาราง PIPE เก็บเป็น พ.ศ. คำสั่งเรื่องอายุท่อจึงบวก 543 เข้ากับปีปัจจุบันก่อนนำมาลบ</li>
+      <li>ท่อปลอก (<code>functionId = 6</code>) ถูกตัดออกจากคำสั่งที่คิดความยาวท่อทุกคำสั่ง</li>
+    </ul>
+  </details>
+
+  <footer>ชื่อตารางเปลี่ยนตามสาขาที่เลือก · ชื่อคอลัมน์ของ PIPE และ DMA อ้างอิงโครงสร้างจริง ชั้นข้อมูลอื่นยังเป็นค่าสมมติ</footer>
+</div>
+
+<script src="queries.js?v=2026-08-31"></script>
+<script>
+
+
+/* ---------- สถานะ ---------- */
+
+const picked = new Set(['PIPE','DMA']);
+let visible = [], idx = 0, sql = '';
+const $ = id => document.getElementById(id);
+
+/* LAYERS, BRANCHES, TABLE_SUFFIX และ CATALOG มาจากไฟล์ queries.js */
+
+/* ---------- สาขาและชื่อตาราง ---------- */
+BRANCHES.forEach(([code, name]) => {
+  const o = document.createElement('option');
+  o.value = code; o.textContent = code + ' — ' + name;
+  $('branch').appendChild(o);
+});
+$('branch').value = '5541018';
+
+const tableName = k => 'B' + $('branch').value + '_' + (TABLE_SUFFIX[k] || k);
+const LAYER_RE = new RegExp('\\b(' + LAYERS.map(L => L.k).join('|') + ')\\b', 'g');
+const expand = s => s.replace(LAYER_RE, m => tableName(m));
+
+function drawPreview(){
+  const box = $('preview');
+  box.innerHTML = '';
+  const order = LAYERS.filter(L => picked.has(L.k));
+  if(!order.length){ box.textContent = 'เลือกชั้นข้อมูลเพื่อดูชื่อตารางที่จะใช้ในคำสั่ง'; return; }
+  order.forEach(L => {
+    const b = document.createElement('b');
+    b.textContent = tableName(L.k);
+    box.appendChild(b);
+  });
+}
+
+$('branch').addEventListener('change', () => { drawPreview(); regenerate(); });
+
+/* ---------- ปุ่มชั้นข้อมูล ---------- */
+LAYERS.forEach(L => {
+  const btn = document.createElement('button');
+  btn.className = 'chip'; btn.type = 'button'; btn.dataset.layer = L.k;
+  btn.setAttribute('aria-pressed', String(picked.has(L.k)));
+  const b = document.createElement('b'); b.textContent = L.k;
+  const s = document.createElement('span'); s.textContent = L.th;
+  btn.append(b, s);
+  btn.addEventListener('click', () => {
+    picked.has(L.k) ? picked.delete(L.k) : picked.add(L.k);
+    btn.setAttribute('aria-pressed', String(picked.has(L.k)));
+    refresh();
+  });
+  $('chips').appendChild(btn);
+});
+
+$('all').addEventListener('click', () => {
+  const on = picked.size < LAYERS.length;
+  picked.clear();
+  if(on) LAYERS.forEach(L => picked.add(L.k));
+  document.querySelectorAll('.chip').forEach(c =>
+    c.setAttribute('aria-pressed', String(picked.has(c.dataset.layer))));
+  $('all').textContent = on ? 'ล้างทั้งหมด' : 'เลือกทั้งหมด';
+  refresh();
+});
+
+$('total').textContent = CATALOG.length + ' คำสั่ง';
+
+/* ---------- กรองคำถามตามชั้นข้อมูลที่เลือก ---------- */
+function refresh(){
+  drawPreview();
+  visible = CATALOG.filter(q => q.req.every(r => picked.has(r)));
+  idx = 0;
+  const sel = $('q');
+  sel.innerHTML = '';
+  sel.disabled = visible.length === 0;
+  $('go').disabled = visible.length === 0;
+
+  if(!visible.length){
+    const o = document.createElement('option');
+    o.textContent = picked.size ? 'ไม่มีคำสั่งสำหรับชุดชั้นข้อมูลนี้ — เลือกเพิ่มอีกชั้น' : 'ยังไม่ได้เลือกชั้นข้อมูล';
+    sel.appendChild(o);
+    $('qcount').textContent = '0 รายการ';
+    $('about').textContent = 'คำสั่งจะแสดงเมื่อเลือกชั้นข้อมูลที่คำสั่งนั้นต้องใช้ครบทุกชั้น เช่น ความยาวท่อในแต่ละ DMA ต้องเลือกทั้ง PIPE และ DMA';
+    resetPlate();
+    return;
+  }
+
+  const groups = {};
+  visible.forEach((q, i) => (groups[q.req[0]] = groups[q.req[0]] || []).push(i));
+  Object.keys(groups).forEach(g => {
+    const th = (LAYERS.find(L => L.k === g) || {}).th || '';
+    const og = document.createElement('optgroup');
+    og.label = g + ' · ' + th;
+    groups[g].forEach(i => {
+      const o = document.createElement('option');
+      o.value = String(i); o.textContent = visible[i].n;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+  sel.value = '0';
+  $('qcount').textContent = visible.length + ' รายการ';
+  describe();
+}
+
+function describe(){
+  const q = visible[idx];
+  $('about').innerHTML = '';
+  const tag = document.createElement('span');
+  tag.className = 'uses'; tag.textContent = q.req.join(' + ');
+  $('about').append(tag, document.createTextNode(q.a));
+}
+
+$('q').addEventListener('change', () => { idx = Number($('q').value); describe(); });
+
+function resetPlate(){
+  $('out').innerHTML = '<div class="empty"><div class="box">— ยังไม่มีคำสั่ง —<br>เลือกคำถามด้านบน แล้วกด CREATE SQL</div></div>';
+  $('note').hidden = true; sql = '';
+  $('copy').disabled = true; $('dl').disabled = true;
+  const t = $('trace'); t.innerHTML = '';
+  const e = document.createElement('em'); e.textContent = '03';
+  t.append(e, document.createTextNode(' SQL Statement'));
+}
+
+/* ---------- ระบายสีไวยากรณ์ ---------- */
+const KW = 'SELECT|FROM|WHERE|AND|OR|NOT|NULL|AS|ON|JOIN|LEFT|RIGHT|INNER|OUTER|GROUP|ORDER|BY|HAVING|LIMIT|DISTINCT|EXISTS|UNION|ALL|CASE|WHEN|THEN|ELSE|END|IS|IN|ASC|DESC|CAST|INTEGER';
+const FN = 'ST_[A-Za-z0-9_]+|count|sum|min|max|avg|round|abs|coalesce|strftime|group_concat';
+const RE = new RegExp("('[^']*')|\\b(" + FN + ")\\b|\\b(" + KW + ")\\b|\\b(\\d+(?:\\.\\d+)?)\\b", 'g');
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const paint = line => esc(line).replace(RE, (m, s, f, k, n) =>
+  s ? '<i class="s">' + s + '</i>' :
+  f ? '<i class="f">' + f + '</i>' :
+  k ? '<i class="k">' + k + '</i>' :
+      '<i class="n">' + n + '</i>');
+
+/* ---------- สร้างคำสั่ง ---------- */
+function create(){
+  if(!visible.length) return;
+  const item = visible[idx];
+  sql = expand(item.sql);
+  const lines = sql.split('\n');
+
+  $('out').innerHTML = '';
+  const area = document.createElement('div'); area.className = 'code-area';
+  const gut = document.createElement('div'); gut.className = 'gutter';
+  gut.textContent = lines.map((_, i) => i + 1).join('\n');
+  const pre = document.createElement('pre'); pre.className = 'code reveal';
+  pre.innerHTML = lines.map(l => '<span class="line">' + (paint(l) || '&nbsp;') + '</span>').join('');
+  Array.from(pre.children).forEach((el, i) => el.style.animationDelay = Math.min(i * 14, 480) + 'ms');
+  area.append(gut, pre); $('out').appendChild(area);
+
+  const t = $('trace'); t.innerHTML = '';
+  const e = document.createElement('em'); e.textContent = '03';
+  const br = document.createElement('b');
+  br.textContent = ($('branch').selectedOptions[0].textContent.split(' — ')[1] || '');
+  const sep1 = document.createElement('i'); sep1.textContent = '/';
+  const lay = document.createElement('b'); lay.textContent = item.req.join(' + ');
+  const sep2 = document.createElement('i'); sep2.textContent = '/';
+  const nm = document.createElement('span'); nm.textContent = item.n;
+  t.append(e, br, sep1, lay, sep2, nm);
+
+  $('note').hidden = false;
+  $('note').textContent = item.note;
+  $('copy').disabled = false; $('dl').disabled = false;
+}
+
+/* สร้างใหม่อัตโนมัติเมื่อเปลี่ยนสาขา ถ้ามีคำสั่งแสดงอยู่แล้ว */
+function regenerate(){ if(sql) create(); }
+
+$('go').addEventListener('click', create);
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); create(); }
+});
+
+/* ---------- คัดลอก / ดาวน์โหลด ---------- */
+$('copy').addEventListener('click', async () => {
+  const btn = $('copy');
+  try{ await navigator.clipboard.writeText(sql); }
+  catch(err){
+    const ta = document.createElement('textarea');
+    ta.value = sql; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }
+    catch(e2){ btn.textContent = 'คัดลอกไม่สำเร็จ'; return; }
+    finally{ ta.remove(); }
+  }
+  btn.textContent = 'คัดลอกแล้ว'; btn.classList.add('done');
+  setTimeout(() => { btn.textContent = 'คัดลอก'; btn.classList.remove('done'); }, 1600);
+});
+
+$('dl').addEventListener('click', () => {
+  const blob = new Blob([sql], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = $('branch').value + '_' + visible[idx].req[0].toLowerCase() + '.sql';
+  a.click(); URL.revokeObjectURL(a.href);
+});
+
+refresh();
+resetPlate();
+</script>

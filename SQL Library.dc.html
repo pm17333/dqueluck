@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="./app.css">
+<script src="./queries.js?v=2026-08-31"></script>
+<script src="./app.js?v=2026-08-31"></script>
+</helmet>
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <h1>D QUE LUCK</h1>
+      <p>เว็ปไซต์สำหรับสร้าง SQL เพื่อการสืบค้นข้อมูลกิจการประปา กปภ.ข.2</p>
+    </div>
+    <div class="stamp"><b id="total">33 คำสั่ง</b>QGIS Virtual Layer · BY DUCCCK88</div>
+  </header>
+
+  <div class="band">
+    <section class="panel">
+      <p class="eyebrow"><em>01</em> สาขาและชั้นข้อมูล<span class="tail">เลือกได้หลายชั้น</span><button type="button" id="all">เลือกทั้งหมด</button></p>
+      <label for="branch">สาขา</label>
+      <select id="branch"></select>
+      <p class="preview" id="preview"></p>
+      <div class="chips" id="chips"></div>
+      <div class="hint" id="hint" hidden=""></div>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow"><em>02</em> สิ่งที่ต้องการสืบค้น<span class="tail" id="qcount"></span></p>
+      <label for="q">คำถามที่ต้องการคำตอบ</label>
+      <select id="q"></select>
+      <p class="about" id="about"></p>
+      <button class="go" id="go">Create SQL <span>Ctrl + Enter</span></button>
+    </section>
+  </div>
+
+  <section class="plate">
+    <div class="plate-head">
+      <div class="trace" id="trace"><em>03</em> SQL Statement</div>
+      <div class="tools">
+        <button class="tool primary" id="copy" disabled="">คัดลอก SQL</button>
+        <button class="tool" id="dl" disabled="">.sql</button>
+      </div>
+    </div>
+    <div id="out"></div>
+    <div class="note" id="note" hidden=""></div>
+  </section>
+
+  <details>
+    <summary>ข้อควรรู้ก่อนใช้ใน QGIS</summary>
+    <ul>
+      <li>เปิดที่ <code>Layer › Add Layer › Add/Edit Virtual Layer</code> วางคำสั่งในช่อง Query — ชั้นข้อมูลที่อ้างถึงต้องเปิดอยู่ในโปรเจกต์และชื่อเลเยอร์ต้องตรงกับที่ใช้ในคำสั่ง</li>
+      <li>ระยะทางและพื้นที่คิดตามหน่วยของระบบพิกัด ค่าที่ระบุเป็นเมตรจะถูกต้องเมื่อข้อมูลอยู่ในระบบพิกัดแบบเมตร เช่น EPSG:32647 หรือ 32648</li>
+      <li>ท่อปลอก (<code>functionId = 6</code>) ถูกตัดออกจากคำสั่งที่คิดความยาวท่อทุกคำสั่ง</li>
+    </ul>
+  </details>
+
+  <footer>พัฒนาโดย ดรีมสุดหล่อ</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentDidMount(){
+    let tries = 0;
+    const boot = () => {
+      if(window.initApp){
+        if(!this._booted){ this._booted = true; window.initApp(); }
+        return;
+      }
+      if(tries++ < 200) setTimeout(boot, 40);
+    };
+    boot();
+  }
+  renderVals(){ return {}; }
+}
+</script>
+</body>
+</html>

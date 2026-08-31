@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --ink:#141414;      /* พื้นหลัง */
+  --gray:#444444;     /* เส้นขอบ, พื้นยกระดับ */
+  --mid:#979797;      /* ตัวอักษรรอง */
+  --pale:#D6D6D6;     /* ตัวอักษรหลัก */
+  --acid:#E2E800;     /* สีเน้น */
+  --surface:#1B1B1B;
+  --surface-2:#212121;
+  --display:'Bai Jamjuree','Trebuchet MS',system-ui,sans-serif;
+  --body:'IBM Plex Sans Thai','Bai Jamjuree',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--ink);
+  background-image:
+    repeating-linear-gradient(0deg,rgba(151,151,151,.045) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(151,151,151,.045) 0 1px,transparent 1px 44px);
+  color:var(--pale);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--acid)}
+a:hover{color:var(--pale)}
+.wrap{max-width:1280px;margin:0 auto;padding:26px 22px 64px}
+
+/* ---------- หัวเรื่อง ---------- */
+.masthead{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;
+  padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--gray)}
+.masthead h1{font-family:var(--display);font-weight:700;font-size:clamp(23px, 2.4vw, 31px);
+  letter-spacing:-.02em;line-height:1.15;margin:0;color:#fff}
+.masthead h1 i{font-style:normal;color:var(--acid)}
+.masthead p{margin:6px 0 0;color:var(--mid);font-size:15.5px;max-width:62ch}
+.stamp{font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gray);text-align:right;line-height:1.9;white-space:nowrap}
+.stamp b{display:block;color:var(--acid);font-weight:700;font-size:16px;letter-spacing:.04em}
+
+/* ---------- แถบควบคุม 01 + 02 ---------- */
+.band{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-bottom:14px;align-items:start}
+@media(max-width:1000px){.band{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--gray);padding:15px 17px 17px;height:100%}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--mid);display:flex;align-items:center;gap:9px;margin:0 0 12px}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--gray);order:5}
+.eyebrow em{font-style:normal;color:var(--acid);font-weight:700;font-size:14px;letter-spacing:.06em}
+.eyebrow .tail{color:var(--mid);letter-spacing:.06em;flex:none;order:6}
+.eyebrow button{background:none;border:1px solid var(--gray);padding:4px 9px;cursor:pointer;
+  font:inherit;font-size:11.5px;letter-spacing:.12em;color:var(--pale);flex:none;order:7;
+  transition:background .12s ease,color .12s ease,border-color .12s ease}
+.eyebrow button:hover{background:var(--pale);color:var(--ink);border-color:var(--pale)}
+
+label{display:block;font-size:14px;font-weight:500;color:var(--mid);margin:0 0 6px}
+select{width:100%;font-family:var(--body);font-size:16px;color:var(--pale);background:var(--ink);
+  border:1px solid var(--gray);border-radius:0;padding:11px 12px;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--mid) 50%),linear-gradient(135deg,var(--mid) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+select:hover{border-color:var(--mid)}
+select:disabled{color:var(--gray);background-color:#171717}
+select:focus-visible,button:focus-visible{outline:2px solid var(--acid);outline-offset:2px}
+
+/* ชื่อตารางจริง */
+.preview{margin:12px 0 13px;display:flex;flex-wrap:wrap;gap:5px;font-family:var(--mono);
+  font-size:13px;color:var(--gray);line-height:1.7}
+.preview b{color:var(--pale);font-weight:400;background:rgba(151,151,151,.13);
+  border:1px solid rgba(151,151,151,.22);padding:2px 6px;letter-spacing:.02em}
+
+/* ---------- ปุ่มชั้นข้อมูล ---------- */
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+@media(max-width:620px){.chips{grid-template-columns:repeat(2,1fr)}}
+.chip{display:block;text-align:left;padding:8px 10px 9px;cursor:pointer;background:transparent;
+  border:1px solid var(--gray);color:var(--pale);font-family:var(--body);position:relative;
+  transition:background .12s ease,border-color .12s ease,color .12s ease}
+.chip b{display:block;font-family:var(--mono);font-size:13.5px;font-weight:700;letter-spacing:.02em;
+  color:var(--pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip span{display:block;font-size:13px;color:var(--mid);margin-top:1px}
+.chip:hover{border-color:var(--mid);background:rgba(151,151,151,.08)}
+.chip[aria-pressed="true"]{background:var(--acid);border-color:var(--acid)}
+.chip[aria-pressed="true"] b{color:var(--ink)}
+.chip[aria-pressed="true"] span{color:rgba(20,20,20,.66)}
+.chip[aria-pressed="true"]:hover{background:var(--acid);border-color:var(--ink)}
+.chip[aria-pressed="true"].inuse{box-shadow:inset 0 0 0 2px var(--ink)}
+.chip i.badge{position:absolute;top:6px;right:7px;font-style:normal;font-family:var(--mono);
+  font-size:11.5px;font-weight:700;letter-spacing:.02em;color:var(--acid)}
+.chip[aria-pressed="true"] i.badge{color:rgba(20,20,20,.55)}
+
+/* ตัวช่วยเมื่อไม่มีคำสั่งตรงกับชุดที่เลือก */
+.hint{margin-top:12px;border:1px dashed var(--gray);background:rgba(226,232,0,.05);padding:11px 12px}
+.hint p{margin:0 0 9px;font-size:14px;color:var(--mid);line-height:1.55}
+.hint p b{color:var(--acid);font-weight:600}
+.hint .row{display:flex;flex-wrap:wrap;gap:6px}
+.hint button{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;cursor:pointer;
+  background:transparent;border:1px solid var(--acid);color:var(--acid);padding:5px 9px;
+  transition:background .12s ease,color .12s ease}
+.hint button:hover{background:var(--acid);color:var(--ink)}
+
+/* ---------- ขั้น 02 ---------- */
+.about{margin:11px 0 0;font-size:14.5px;color:var(--mid);line-height:1.6}
+.uses{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--acid);
+  border:1px solid rgba(226,232,0,.4);padding:2px 6px;margin-right:8px;white-space:nowrap}
+.go{margin-top:13px;width:100%;padding:13px 20px;border:0;cursor:pointer;background:var(--acid);
+  color:var(--ink);font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.1em;
+  text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease,color .12s ease}
+.go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 0 -1px rgba(226,232,0,.28)}
+.go:active{transform:translateY(0);box-shadow:none}
+.go:disabled{background:transparent;border:1px dashed var(--gray);color:var(--gray);cursor:not-allowed}
+.go span{font-size:11.5px;opacity:.62;letter-spacing:.06em}
+
+/* ---------- ขั้น 03 กล่องคำสั่ง ---------- */
+.plate{position:relative;background:var(--surface);border:1px solid var(--gray);
+  border-top:2px solid var(--acid)}
+.plate-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid var(--gray);background:var(--surface-2)}
+.trace{font-family:var(--mono);font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mid);display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}
+.trace em{font-style:normal;font-weight:700;color:var(--acid);font-size:14px}
+.trace b{color:var(--pale);font-weight:700}
+.trace i{font-style:normal;color:var(--gray)}
+.trace span{text-transform:none;letter-spacing:.02em;font-family:var(--body);font-size:14px;color:var(--mid)}
+.tools{display:flex;gap:7px}
+.tool{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--gray);color:var(--pale);padding:7px 13px;cursor:pointer;
+  transition:background .12s ease,border-color .12s ease,color .12s ease}
+.tool:hover:not(:disabled){background:var(--pale);color:var(--ink);border-color:var(--pale)}
+.tool:disabled{color:var(--gray);cursor:not-allowed}
+.tool.primary{border-color:var(--acid);color:var(--acid)}
+.tool.primary:hover:not(:disabled){background:var(--acid);color:var(--ink)}
+.tool.primary:disabled{border-color:var(--gray);color:var(--gray)}
+.tool.done{background:var(--acid);border-color:var(--acid);color:var(--ink)}
+
+.code-area{display:flex;overflow-x:auto;background:var(--ink)}
+.gutter{flex:none;white-space:pre;padding:20px 12px 22px 16px;text-align:right;font-family:var(--mono);
+  font-size:15.5px;line-height:28px;color:var(--gray);border-right:1px solid var(--gray);
+  user-select:none;background:var(--surface)}
+.code{flex:1;margin:0;padding:20px 22px 22px;font-family:var(--mono);font-size:15.5px;
+  line-height:28px;white-space:pre;tab-size:4;color:var(--pale)}
+.code .line{display:block;min-height:28px}
+.code .line:hover{background:rgba(226,232,0,.06)}
+.reveal .line{animation:draw .2s ease-out both}
+@keyframes draw{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.reveal .line{animation:none}.go:hover{transform:none}}
+.k{color:var(--acid);font-weight:700}
+.f{color:var(--pale);font-weight:700}
+.s{color:var(--mid)}
+.n{color:var(--acid);background:rgba(226,232,0,.11);padding:0 3px}
+
+.empty{padding:66px 24px;text-align:center;color:var(--mid);background:var(--ink)}
+.empty .box{display:inline-block;border:1px dashed var(--gray);padding:22px 26px;
+  font-family:var(--mono);font-size:13.5px;letter-spacing:.06em;line-height:2.1;color:var(--gray)}
+.empty .box b{display:block;color:var(--pale);font-size:15px;letter-spacing:.04em;font-weight:500}
+.note{padding:12px 14px;font-size:14.5px;color:var(--mid);display:flex;gap:10px;align-items:flex-start;
+  border-top:1px solid var(--gray);background:var(--surface)}
+.note::before{content:"NB";font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.12em;
+  color:var(--acid);border:1px solid rgba(226,232,0,.45);padding:2px 5px;flex:none;margin-top:1px}
+
+/* ---------- ท้ายหน้า ---------- */
+details{margin-top:16px;background:var(--surface);border:1px solid var(--gray);padding:13px 17px}
+summary{cursor:pointer;font-family:var(--mono);font-size:12.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--pale)}
+summary:hover{color:var(--acid)}
+details ul{margin:13px 0 3px;padding-left:18px;font-size:15px;color:var(--mid);line-height:1.8}
+details code{font-family:var(--mono);font-size:14px;background:rgba(226,232,0,.1);padding:1px 5px;color:var(--acid)}
+footer{margin-top:20px;font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--gray);line-height:1.9}

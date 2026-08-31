@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คลังคำสั่ง SQL — QGIS Virtual Layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ink:#141414;      /* พื้นหลัง */
+  --gray:#444444;     /* เส้นขอบ, พื้นยกระดับ */
+  --mid:#979797;      /* ตัวอักษรรอง */
+  --pale:#D6D6D6;     /* ตัวอักษรหลัก */
+  --acid:#E2E800;     /* สีเน้น */
+  --surface:#1B1B1B;
+  --surface-2:#212121;
+  --display:'Bai Jamjuree','Trebuchet MS',system-ui,sans-serif;
+  --body:'IBM Plex Sans Thai','Bai Jamjuree',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--ink);
+  background-image:
+    repeating-linear-gradient(0deg,rgba(151,151,151,.045) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(151,151,151,.045) 0 1px,transparent 1px 44px);
+  color:var(--pale);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--acid)}
+a:hover{color:var(--pale)}
+.wrap{max-width:1280px;margin:0 auto;padding:26px 22px 64px}
+
+/* ---------- หัวเรื่อง ---------- */
+.masthead{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;
+  padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--gray)}
+.masthead h1{font-family:var(--display);font-weight:700;font-size:clamp(23px, 2.4vw, 31px);
+  letter-spacing:-.02em;line-height:1.15;margin:0;color:#fff}
+.masthead h1 i{font-style:normal;color:var(--acid)}
+.masthead p{margin:6px 0 0;color:var(--mid);font-size:15.5px;max-width:62ch}
+.stamp{font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gray);text-align:right;line-height:1.9;white-space:nowrap}
+.stamp b{display:block;color:var(--acid);font-weight:700;font-size:16px;letter-spacing:.04em}
+
+/* ---------- แถบควบคุม 01 + 02 ---------- */
+.band{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-bottom:14px;align-items:start}
+@media(max-width:1000px){.band{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--gray);padding:15px 17px 17px;height:100%}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--mid);display:flex;align-items:center;gap:9px;margin:0 0 12px}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--gray);order:5}
+.eyebrow em{font-style:normal;color:var(--acid);font-weight:700;font-size:14px;letter-spacing:.06em}
+.eyebrow .tail{color:var(--mid);letter-spacing:.06em;flex:none;order:6}
+.eyebrow button{background:none;border:1px solid var(--gray);padding:4px 9px;cursor:pointer;
+  font:inherit;font-size:11.5px;letter-spacing:.12em;color:var(--pale);flex:none;order:7;
+  transition:background .12s ease,color .12s ease,border-color .12s ease}
+.eyebrow button:hover{background:var(--pale);color:var(--ink);border-color:var(--pale)}
+
+label{display:block;font-size:14px;font-weight:500;color:var(--mid);margin:0 0 6px}
+select{width:100%;font-family:var(--body);font-size:16px;color:var(--pale);background:var(--ink);
+  border:1px solid var(--gray);border-radius:0;padding:11px 12px;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--mid) 50%),linear-gradient(135deg,var(--mid) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+select:hover{border-color:var(--mid)}
+select:disabled{color:var(--gray);background-color:#171717}
+select:focus-visible,button:focus-visible{outline:2px solid var(--acid);outline-offset:2px}
+
+/* ชื่อตารางจริง */
+.preview{margin:12px 0 13px;display:flex;flex-wrap:wrap;gap:5px;font-family:var(--mono);
+  font-size:13px;color:var(--gray);line-height:1.7}
+.preview b{color:var(--pale);font-weight:400;background:rgba(151,151,151,.13);
+  border:1px solid rgba(151,151,151,.22);padding:2px 6px;letter-spacing:.02em}
+
+/* ---------- ปุ่มชั้นข้อมูล ---------- */
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+@media(max-width:620px){.chips{grid-template-columns:repeat(2,1fr)}}
+.chip{display:block;text-align:left;padding:8px 10px 9px;cursor:pointer;background:transparent;
+  border:1px solid var(--gray);color:var(--pale);font-family:var(--body);position:relative;
+  transition:background .12s ease,border-color .12s ease,color .12s ease}
+.chip b{display:block;font-family:var(--mono);font-size:13.5px;font-weight:700;letter-spacing:.02em;
+  color:var(--pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip span{display:block;font-size:13px;color:var(--mid);margin-top:1px}
+.chip:hover{border-color:var(--mid);background:rgba(151,151,151,.08)}
+.chip[aria-pressed="true"]{background:var(--acid);border-color:var(--acid)}
+.chip[aria-pressed="true"] b{color:var(--ink)}
+.chip[aria-pressed="true"] span{color:rgba(20,20,20,.66)}
+.chip[aria-pressed="true"]:hover{background:var(--acid);border-color:var(--ink)}
+.chip[aria-pressed="true"].inuse{box-shadow:inset 0 0 0 2px var(--ink)}
+.chip i.badge{position:absolute;top:6px;right:7px;font-style:normal;font-family:var(--mono);
+  font-size:11.5px;font-weight:700;letter-spacing:.02em;color:var(--acid)}
+.chip[aria-pressed="true"] i.badge{color:rgba(20,20,20,.55)}
+
+/* ตัวช่วยเมื่อไม่มีคำสั่งตรงกับชุดที่เลือก */
+.hint{margin-top:12px;border:1px dashed var(--gray);background:rgba(226,232,0,.05);padding:11px 12px}
+.hint p{margin:0 0 9px;font-size:14px;color:var(--mid);line-height:1.55}
+.hint p b{color:var(--acid);font-weight:600}
+.hint .row{display:flex;flex-wrap:wrap;gap:6px}
+.hint button{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;cursor:pointer;
+  background:transparent;border:1px solid var(--acid);color:var(--acid);padding:5px 9px;
+  transition:background .12s ease,color .12s ease}
+.hint button:hover{background:var(--acid);color:var(--ink)}
+
+/* ---------- ขั้น 02 ---------- */
+.about{margin:11px 0 0;font-size:14.5px;color:var(--mid);line-height:1.6}
+.uses{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--acid);
+  border:1px solid rgba(226,232,0,.4);padding:2px 6px;margin-right:8px;white-space:nowrap}
+.go{margin-top:13px;width:100%;padding:13px 20px;border:0;cursor:pointer;background:var(--acid);
+  color:var(--ink);font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.1em;
+  text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease,color .12s ease}
+.go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 0 -1px rgba(226,232,0,.28)}
+.go:active{transform:translateY(0);box-shadow:none}
+.go:disabled{background:transparent;border:1px dashed var(--gray);color:var(--gray);cursor:not-allowed}
+.go span{font-size:11.5px;opacity:.62;letter-spacing:.06em}
+
+/* ---------- ขั้น 03 กล่องคำสั่ง ---------- */
+.plate{position:relative;background:var(--surface);border:1px solid var(--gray);
+  border-top:2px solid var(--acid)}
+.plate-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-bottom:1px solid var(--gray);background:var(--surface-2)}
+.trace{font-family:var(--mono);font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mid);display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}
+.trace em{font-style:normal;font-weight:700;color:var(--acid);font-size:14px}
+.trace b{color:var(--pale);font-weight:700}
+.trace i{font-style:normal;color:var(--gray)}
+.trace span{text-transform:none;letter-spacing:.02em;font-family:var(--body);font-size:14px;color:var(--mid)}
+.tools{display:flex;gap:7px}
+.tool{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--gray);color:var(--pale);padding:7px 13px;cursor:pointer;
+  transition:background .12s ease,border-color .12s ease,color .12s ease}
+.tool:hover:not(:disabled){background:var(--pale);color:var(--ink);border-color:var(--pale)}
+.tool:disabled{color:var(--gray);cursor:not-allowed}
+.tool.primary{border-color:var(--acid);color:var(--acid)}
+.tool.primary:hover:not(:disabled){background:var(--acid);color:var(--ink)}
+.tool.primary:disabled{border-color:var(--gray);color:var(--gray)}
+.tool.done{background:var(--acid);border-color:var(--acid);color:var(--ink)}
+
+.code-area{display:flex;overflow-x:auto;background:var(--ink)}
+.gutter{flex:none;white-space:pre;padding:20px 12px 22px 16px;text-align:right;font-family:var(--mono);
+  font-size:15.5px;line-height:28px;color:var(--gray);border-right:1px solid var(--gray);
+  user-select:none;background:var(--surface)}
+.code{flex:1;margin:0;padding:20px 22px 22px;font-family:var(--mono);font-size:15.5px;
+  line-height:28px;white-space:pre;tab-size:4;color:var(--pale)}
+.code .line{display:block;min-height:28px}
+.code .line:hover{background:rgba(226,232,0,.06)}
+.reveal .line{animation:draw .2s ease-out both}
+@keyframes draw{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.reveal .line{animation:none}.go:hover{transform:none}}
+.k{color:var(--acid);font-weight:700}
+.f{color:var(--pale);font-weight:700}
+.s{color:var(--mid)}
+.n{color:var(--acid);background:rgba(226,232,0,.11);padding:0 3px}
+
+.empty{padding:66px 24px;text-align:center;color:var(--mid);background:var(--ink)}
+.empty .box{display:inline-block;border:1px dashed var(--gray);padding:22px 26px;
+  font-family:var(--mono);font-size:13.5px;letter-spacing:.06em;line-height:2.1;color:var(--gray)}
+.empty .box b{display:block;color:var(--pale);font-size:15px;letter-spacing:.04em;font-weight:500}
+.note{padding:12px 14px;font-size:14.5px;color:var(--mid);display:flex;gap:10px;align-items:flex-start;
+  border-top:1px solid var(--gray);background:var(--surface)}
+.note::before{content:"NB";font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.12em;
+  color:var(--acid);border:1px solid rgba(226,232,0,.45);padding:2px 5px;flex:none;margin-top:1px}
+
+/* ---------- ท้ายหน้า ---------- */
+details{margin-top:16px;background:var(--surface);border:1px solid var(--gray);padding:13px 17px}
+summary{cursor:pointer;font-family:var(--mono);font-size:12.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--pale)}
+summary:hover{color:var(--acid)}
+details ul{margin:13px 0 3px;padding-left:18px;font-size:15px;color:var(--mid);line-height:1.8}
+details code{font-family:var(--mono);font-size:14px;background:rgba(226,232,0,.1);padding:1px 5px;color:var(--acid)}
+footer{margin-top:20px;font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--gray);line-height:1.9}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <h1>คลังคำสั่ง SQL <i>·</i> ระบบประปา</h1>
+      <p>เลือกสาขาและชั้นข้อมูลที่มีในโปรเจกต์ เลือกสิ่งที่ต้องการสืบค้น แล้วคัดลอกคำสั่งไปวางใน Virtual Layer ของ QGIS</p>
+    </div>
+    <div class="stamp"><b id="total">— คำสั่ง</b>QGIS Virtual Layer · SpatiaLite</div>
+  </header>
+
+  <div class="band">
+    <section class="panel">
+      <p class="eyebrow"><em>01</em> สาขาและชั้นข้อมูล<span class="tail">เลือกได้หลายชั้น</span><button type="button" id="all">เลือกทั้งหมด</button></p>
+      <label for="branch">สาขา</label>
+      <select id="branch"></select>
+      <p class="preview" id="preview"></p>
+      <div class="chips" id="chips"></div>
+      <div class="hint" id="hint" hidden></div>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow"><em>02</em> สิ่งที่ต้องการสืบค้น<span class="tail" id="qcount"></span></p>
+      <label for="q">คำถามที่ต้องการคำตอบ</label>
+      <select id="q"></select>
+      <p class="about" id="about"></p>
+      <button class="go" id="go">Create SQL <span>Ctrl + Enter</span></button>
+    </section>
+  </div>
+
+  <section class="plate">
+    <div class="plate-head">
+      <div class="trace" id="trace"><em>03</em> SQL Statement</div>
+      <div class="tools">
+        <button class="tool primary" id="copy" disabled>คัดลอก SQL</button>
+        <button class="tool" id="dl" disabled>.sql</button>
+      </div>
+    </div>
+    <div id="out"></div>
+    <div class="note" id="note" hidden></div>
+  </section>
+
+  <details>
+    <summary>ข้อควรรู้ก่อนใช้ใน QGIS</summary>
+    <ul>
+      <li>เปิดที่ <code>Layer › Add Layer › Add/Edit Virtual Layer</code> วางคำสั่งในช่อง Query — ชั้นข้อมูลที่อ้างถึงต้องเปิดอยู่ในโปรเจกต์และชื่อเลเยอร์ต้องตรงกับที่ใช้ในคำสั่ง</li>
+      <li>ระยะทางและพื้นที่คิดตามหน่วยของระบบพิกัด ค่าที่ระบุเป็นเมตรจะถูกต้องเมื่อข้อมูลอยู่ในระบบพิกัดแบบเมตร เช่น EPSG:32647 หรือ 32648</li>
+      <li>ท่อปลอก (<code>functionId = 6</code>) ถูกตัดออกจากคำสั่งที่คิดความยาวท่อทุกคำสั่ง</li>
+    </ul>
+  </details>
+
+  <footer>พัฒนาโดย ดรีมสุดหล่อ</footer>
+</div>
+<script src="queries.js?v=2026-08-31"></script>
+<script>
+/* ตรรกะการทำงาน — ต่อยอดจากไฟล์เดิม เพิ่มเฉพาะตัวช่วยด้านการมองเห็น
+   LAYERS, BRANCHES, TABLE_SUFFIX, CATALOG มาจาก queries.js */
+
+window.initApp = function initApp(){
+
+const picked = new Set(['PIPE','DMA']);
+let visible = [], idx = 0, sql = '';
+const $ = id => document.getElementById(id);
+
+/* ---------- สาขาและชื่อตาราง ---------- */
+BRANCHES.forEach(([code, name]) => {
+  const o = document.createElement('option');
+  o.value = code; o.textContent = code + ' — ' + name;
+  $('branch').appendChild(o);
+});
+$('branch').value = '5541018';
+
+const tableName = k => 'B' + $('branch').value + '_' + (TABLE_SUFFIX[k] || k);
+const LAYER_RE = new RegExp('\\b(' + LAYERS.map(L => L.k).join('|') + ')\\b', 'g');
+const expand = s => s.replace(LAYER_RE, m => tableName(m));
+
+function drawPreview(){
+  const box = $('preview');
+  box.innerHTML = '';
+  const order = LAYERS.filter(L => picked.has(L.k));
+  if(!order.length){ box.textContent = 'เลือกชั้นข้อมูลเพื่อดูชื่อตารางที่จะใช้ในคำสั่ง'; return; }
+  order.forEach(L => {
+    const b = document.createElement('b');
+    b.textContent = tableName(L.k);
+    box.appendChild(b);
+  });
+}
+
+$('branch').addEventListener('change', () => { drawPreview(); regenerate(); });
+
+/* ---------- ปุ่มชั้นข้อมูล ---------- */
+const chipOf = {};
+LAYERS.forEach(L => {
+  const btn = document.createElement('button');
+  btn.className = 'chip'; btn.type = 'button'; btn.dataset.layer = L.k;
+  btn.setAttribute('aria-pressed', String(picked.has(L.k)));
+  const b = document.createElement('b'); b.textContent = L.k;
+  const s = document.createElement('span'); s.textContent = L.th;
+  const badge = document.createElement('i'); badge.className = 'badge';
+  btn.append(b, s, badge);
+  btn.addEventListener('click', () => {
+    picked.has(L.k) ? picked.delete(L.k) : picked.add(L.k);
+    btn.setAttribute('aria-pressed', String(picked.has(L.k)));
+    refresh();
+  });
+  chipOf[L.k] = btn;
+  $('chips').appendChild(btn);
+});
+
+$('all').addEventListener('click', () => {
+  const on = picked.size < LAYERS.length;
+  picked.clear();
+  if(on) LAYERS.forEach(L => picked.add(L.k));
+  document.querySelectorAll('.chip').forEach(c =>
+    c.setAttribute('aria-pressed', String(picked.has(c.dataset.layer))));
+  $('all').textContent = on ? 'ล้างทั้งหมด' : 'เลือกทั้งหมด';
+  refresh();
+});
+
+$('total').textContent = CATALOG.length + ' คำสั่ง';
+
+/* ---------- ตัวช่วย: นับคำสั่งที่ปลดล็อกได้ ---------- */
+const countFor = set => CATALOG.filter(q => q.req.every(r => set.has(r))).length;
+
+function drawBadges(){
+  const base = countFor(picked);
+  LAYERS.forEach(L => {
+    const badge = chipOf[L.k].querySelector('.badge');
+    if(picked.has(L.k)){
+      const n = visible.filter(q => q.req.includes(L.k)).length;
+      badge.textContent = n ? String(n) : '';
+    }else{
+      const test = new Set(picked); test.add(L.k);
+      const gain = countFor(test) - base;
+      badge.textContent = gain > 0 ? '+' + gain : '';
+    }
+  });
+}
+
+/* ตัวช่วยเมื่อไม่มีคำสั่งตรงกับชุดที่เลือก */
+function drawHint(){
+  const box = $('hint');
+  box.innerHTML = '';
+  if(visible.length){ box.hidden = true; return; }
+  box.hidden = false;
+  const base = countFor(picked);
+  const gains = LAYERS.filter(L => !picked.has(L.k)).map(L => {
+    const test = new Set(picked); test.add(L.k);
+    return {k:L.k, th:L.th, gain:countFor(test) - base};
+  }).filter(g => g.gain > 0).sort((a, b) => b.gain - a.gain).slice(0, 4);
+
+  const p = document.createElement('p');
+  if(!picked.size){
+    p.textContent = 'ยังไม่ได้เลือกชั้นข้อมูล — กดปุ่มด้านบนตามชั้นที่เปิดอยู่ในโปรเจกต์ QGIS';
+  }else if(gains.length){
+    p.innerHTML = 'ชุดชั้นข้อมูลนี้ยังไม่ตรงกับคำสั่งใด <b>เพิ่มอีกหนึ่งชั้น</b> เพื่อปลดล็อก';
+  }else{
+    p.textContent = 'ไม่มีคำสั่งสำหรับชุดนี้ ลองเอาบางชั้นออกแล้วเลือกใหม่';
+  }
+  box.appendChild(p);
+  if(gains.length){
+    const row = document.createElement('div'); row.className = 'row';
+    gains.forEach(g => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = '+ ' + g.k + '  (' + g.gain + ' คำสั่ง)';
+      b.addEventListener('click', () => {
+        picked.add(g.k);
+        chipOf[g.k].setAttribute('aria-pressed', 'true');
+        refresh();
+      });
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+  }
+}
+
+/* ---------- กรองคำถามตามชั้นข้อมูลที่เลือก ---------- */
+function refresh(){
+  drawPreview();
+  visible = CATALOG.filter(q => q.req.every(r => picked.has(r)));
+  idx = 0;
+  const sel = $('q');
+  sel.innerHTML = '';
+  sel.disabled = visible.length === 0;
+  $('go').disabled = visible.length === 0;
+
+  if(!visible.length){
+    const o = document.createElement('option');
+    o.textContent = picked.size ? 'ไม่มีคำสั่งสำหรับชุดชั้นข้อมูลนี้ — เลือกเพิ่มอีกชั้น' : 'ยังไม่ได้เลือกชั้นข้อมูล';
+    sel.appendChild(o);
+    $('qcount').textContent = '0 รายการ';
+    $('about').textContent = 'คำสั่งจะแสดงเมื่อเลือกชั้นข้อมูลที่คำสั่งนั้นต้องใช้ครบทุกชั้น เช่น ความยาวท่อในแต่ละ DMA ต้องเลือกทั้ง PIPE และ DMA';
+    markInUse([]);
+    drawBadges(); drawHint();
+    resetPlate();
+    return;
+  }
+
+  const groups = {};
+  visible.forEach((q, i) => (groups[q.req[0]] = groups[q.req[0]] || []).push(i));
+  Object.keys(groups).forEach(g => {
+    const th = (LAYERS.find(L => L.k === g) || {}).th || '';
+    const og = document.createElement('optgroup');
+    og.label = g + ' · ' + th;
+    groups[g].forEach(i => {
+      const o = document.createElement('option');
+      o.value = String(i); o.textContent = visible[i].n;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+  sel.value = '0';
+  $('qcount').textContent = visible.length + ' รายการ';
+  drawBadges(); drawHint();
+  describe();
+}
+
+/* ทำเครื่องหมายว่าคำสั่งที่เลือกใช้ชั้นข้อมูลใดร่วมกัน */
+function markInUse(req){
+  LAYERS.forEach(L => chipOf[L.k].classList.toggle('inuse', req.indexOf(L.k) > -1));
+}
+
+function describe(){
+  const q = visible[idx];
+  $('about').innerHTML = '';
+  const tag = document.createElement('span');
+  tag.className = 'uses'; tag.textContent = q.req.join(' + ');
+  $('about').append(tag, document.createTextNode(q.a));
+  markInUse(q.req);
+}
+
+$('q').addEventListener('change', () => { idx = Number($('q').value); describe(); });
+
+function resetPlate(){
+  $('out').innerHTML = '<div class="empty"><div class="box"><b>ยังไม่มีคำสั่ง</b>เลือกคำถามในขั้น 02 แล้วกด CREATE SQL<br>หรือกด CTRL + ENTER</div></div>';
+  $('note').hidden = true; sql = '';
+  $('copy').disabled = true; $('dl').disabled = true;
+  const t = $('trace'); t.innerHTML = '';
+  const e = document.createElement('em'); e.textContent = '03';
+  t.append(e, document.createTextNode('SQL Statement'));
+}
+
+/* ---------- ระบายสีไวยากรณ์ ---------- */
+const KW = 'SELECT|FROM|WHERE|AND|OR|NOT|NULL|AS|ON|JOIN|LEFT|RIGHT|INNER|OUTER|GROUP|ORDER|BY|HAVING|LIMIT|DISTINCT|EXISTS|UNION|ALL|CASE|WHEN|THEN|ELSE|END|IS|IN|ASC|DESC|CAST|INTEGER';
+const FN = 'ST_[A-Za-z0-9_]+|count|sum|min|max|avg|round|abs|coalesce|strftime|group_concat';
+const RE = new RegExp("('[^']*')|\\b(" + FN + ")\\b|\\b(" + KW + ")\\b|\\b(\\d+(?:\\.\\d+)?)\\b", 'g');
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const paint = line => esc(line).replace(RE, (m, s, f, k, n) =>
+  s ? '<i class="s">' + s + '</i>' :
+  f ? '<i class="f">' + f + '</i>' :
+  k ? '<i class="k">' + k + '</i>' :
+      '<i class="n">' + n + '</i>');
+
+/* ---------- สร้างคำสั่ง ---------- */
+function create(){
+  if(!visible.length) return;
+  const item = visible[idx];
+  sql = expand(item.sql);
+  const lines = sql.split('\n');
+
+  $('out').innerHTML = '';
+  const area = document.createElement('div'); area.className = 'code-area';
+  const gut = document.createElement('div'); gut.className = 'gutter';
+  gut.textContent = lines.map((_, i) => i + 1).join('\n');
+  const pre = document.createElement('pre'); pre.className = 'code reveal';
+  pre.innerHTML = lines.map(l => '<span class="line">' + (paint(l) || '&nbsp;') + '</span>').join('');
+  Array.from(pre.children).forEach((el, i) => el.style.animationDelay = Math.min(i * 12, 420) + 'ms');
+  area.append(gut, pre); $('out').appendChild(area);
+
+  const t = $('trace'); t.innerHTML = '';
+  const e = document.createElement('em'); e.textContent = '03';
+  const br = document.createElement('b');
+  br.textContent = ($('branch').selectedOptions[0].textContent.split(' — ')[1] || '');
+  const sep1 = document.createElement('i'); sep1.textContent = '/';
+  const lay = document.createElement('b'); lay.textContent = item.req.join(' + ');
+  const sep2 = document.createElement('i'); sep2.textContent = '/';
+  const nm = document.createElement('span'); nm.textContent = item.n;
+  const cnt = document.createElement('i'); cnt.textContent = lines.length + ' บรรทัด';
+  t.append(e, br, sep1, lay, sep2, nm, cnt);
+
+  $('note').hidden = false;
+  $('note').textContent = item.note;
+  $('copy').disabled = false; $('dl').disabled = false;
+}
+
+function regenerate(){ if(sql) create(); }
+
+$('go').addEventListener('click', create);
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); create(); }
+});
+
+/* ---------- คัดลอก / ดาวน์โหลด ---------- */
+$('copy').addEventListener('click', async () => {
+  const btn = $('copy');
+  try{ await navigator.clipboard.writeText(sql); }
+  catch(err){
+    const ta = document.createElement('textarea');
+    ta.value = sql; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }
+    catch(e2){ btn.textContent = 'คัดลอกไม่สำเร็จ'; return; }
+    finally{ ta.remove(); }
+  }
+  btn.textContent = 'คัดลอกแล้ว'; btn.classList.add('done');
+  setTimeout(() => { btn.textContent = 'คัดลอก SQL'; btn.classList.remove('done'); }, 1600);
+});
+
+$('dl').addEventListener('click', () => {
+  const blob = new Blob([sql], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = $('branch').value + '_' + visible[idx].req[0].toLowerCase() + '.sql';
+  a.click(); URL.revokeObjectURL(a.href);
+});
+
+refresh();
+resetPlate();
+};
+
+initApp();
+</script>
+</body>
+</html>
