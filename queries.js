@@ -335,6 +335,17 @@ WHERE NOT EXISTS (
         AND p.functionId <> 6
 )`},
 
+{req:['METER'], n:'มาตรวัดน้ำอายุ 10 ปีขึ้นไป',
+ a:'จำนวนมาตรวัดน้ำที่ติดตั้งมาแล้วตั้งแต่ 10 ปีขึ้นไป นับจากวันที่เริ่มติดตั้งมาตร',
+ note:'bgnMTRDT ต้องเป็นวันที่ในรูปแบบที่ SQLite อ่านได้ เช่น YYYY-MM-DD จึงจะเทียบกับ date(\'now\',\'-10 years\') ได้ถูกต้อง · เปลี่ยนเกณฑ์อายุได้ที่เลข 10 · แถวที่ bgnMTRDT ว่างจะไม่ถูกนับ',
+ sql:`SELECT
+    count(*) AS meter_count,
+    min(m.bgnMTRDT) AS oldest_install_date,
+    max(m.bgnMTRDT) AS newest_install_date_in_group
+FROM METER AS m
+WHERE m.bgnMTRDT IS NOT NULL
+    AND date(m.bgnMTRDT) <= date('now', '-10 years')`},
+
 /* ---------- LEAKPOINT ---------- */
 {req:['LEAKPOINT','DMA'], n:'นับจำนวนจุดท่อรั่วในแต่ละ DMA',
  a:'จำนวนจุดรั่วที่บันทึกไว้ในแต่ละพื้นที่จ่ายน้ำ',
