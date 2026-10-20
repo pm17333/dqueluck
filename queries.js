@@ -174,6 +174,15 @@ WHERE p.functionId <> 6
 GROUP BY p.projectNo, p.projectName
 ORDER BY length_km DESC`},
 
+{req:['PIPE'], n:'พื้นที่ให้บริการ (Buffer ท่อ 100 เมตร)',
+ a:'พื้นที่รวมเป็นตารางกิโลเมตรของแนว buffer รอบท่อทั้งระบบ ตัดท่อ functionId 5 และ 6 ออก',
+ note:'แปลงเป็น EPSG:32647 ก่อน buffer 100 เมตร แล้วรวมทุกเส้นเป็นรูปเดียว (dissolve) ก่อนวัดพื้นที่ · ปรับระยะ buffer ได้ที่เลข 100 · ชั้นท่อต้องมี CRS กำกับ ไม่เช่นนั้น ST_Transform จะคืนค่าว่าง · ถ้าท่อมีจำนวนมาก คำสั่งนี้ใช้เวลานานและอาจทำให้ QGIS ค้าง · ผลอาจต่างจากการทำด้วย Processing เล็กน้อย เพราะจำนวนเส้นโค้งของ buffer และวิธีวัดพื้นที่ต่างกัน',
+ sql:`SELECT
+    round(ST_Area(ST_Union(ST_Buffer(ST_Transform(p.geometry, 32647), 100))) / 1000000.0, 4) AS service_area_sqkm
+FROM PIPE AS p
+WHERE p.functionId NOT IN (5, 6)
+    OR p.functionId IS NULL`},
+
 {req:['PIPE','DMA'], n:'ท่อที่อยู่นอกเขต DMA ทุกโซน',
  a:'ท่อประปาที่ไม่พาดผ่านพื้นที่จ่ายน้ำใดเลย',
  note:'ใช้ตรวจท่อที่ยังไม่ได้จัดเข้าโซน หรือขอบเขต DMA ที่ยังไม่ครอบคลุม · ถ้าผลออกมาเยอะผิดปกติให้ตรวจว่าระบบพิกัดของสองชั้นข้อมูลตรงกัน',
